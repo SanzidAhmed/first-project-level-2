@@ -1,58 +1,48 @@
-import Joi from "joi";
+import { z } from "zod";
 
-const userNameValidationSchema = Joi.object({
-  firstName: Joi.string()
-    .required()
-    .max(20)
-    .pattern(/^[A-Z][a-z]*$/, { name: "capitalized" })
-    .messages({
-      "string.base": "First name must be a string",
-      "string.empty": "First name is required",
-      "string.max": "First name length must be at most 20 characters",
-      "string.pattern.name": "First name must be capitalized",
-      "string.pattern.base": "First name must be in capitalized format",
-    }),
-  middleName: Joi.string().trim(),
-  lastName: Joi.string().required().trim().messages({
-    "string.base": "Last name must be a string",
-    "string.empty": "Last name is required",
-  }),
+// Define the UserName schema
+const UserNameValidationSchema = z.object({
+  firstName: z.string().min(1).max(20),
+  middleName: z.string().optional(),
+  lastName: z.string().min(1),
 });
 
-const guardianValidationSchema = Joi.object({
-  fatherName: Joi.string().required().trim(),
-  fatherOccupation: Joi.string().required().trim(),
-  fatherContactNumber: Joi.string().required().trim(),
-  motherName: Joi.string().required().trim(),
-  motherOccupation: Joi.string().required().trim(),
-  motherContactNumber: Joi.string().required().trim(),
+// Define the Guardian schema
+const GuardianValidationSchema = z.object({
+  fatherName: z.string().min(1),
+  fatherOccupation: z.string().min(1),
+  fatherContactNumber: z.string().min(1),
+  motherName: z.string().min(1),
+  motherOccupation: z.string().min(1),
+  motherContactNumber: z.string().min(1),
 });
 
-const localGuardianValidationSchema = Joi.object({
-  name: Joi.string().required().trim(),
-  contactNumber: Joi.string().required().trim(),
-  occupation: Joi.string().required().trim(),
-  address: Joi.string().required().trim(),
+// Define the LocalGuardian schema
+const LocalGuardianValidationSchema = z.object({
+  name: z.string().min(1),
+  contactNumber: z.string().min(1),
+  occupation: z.string().min(1),
+  address: z.string().min(1),
 });
 
-// Define the Joi schema for the student
-const studentValidationSchema = Joi.object({
-  id: Joi.string().required().trim(),
-  name: userNameValidationSchema.required(),
-  gender: Joi.string().valid("male", "female", "custom").required().trim(),
-  dateOfBirth: Joi.string().required().trim(),
-  email: Joi.string().email().required().trim(),
-  contactNumber: Joi.string().required().trim(),
-  emergencyNumber: Joi.string().required().trim(),
-  bloodGroup: Joi.string()
-    .valid("A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-")
-    .trim(),
-  presentAddress: Joi.string().required().trim(),
-  permanentAddress: Joi.string().required().trim(),
-  guardian: guardianValidationSchema.required(),
-  localGuardian: localGuardianValidationSchema.required(),
-  profileImage: Joi.string().required().trim(),
-  isActive: Joi.string().valid("active", "inactive").default("active"),
+// Define the Student schema
+const StudentValidationSchema = z.object({
+  id: z.string().min(1),
+  name: UserNameValidationSchema,
+  gender: z.enum(["male", "female", "custom"]),
+  dateOfBirth: z.string().min(1),
+  email: z.string().email(),
+  contactNumber: z.string().min(1),
+  emergencyNumber: z.string().min(1),
+  bloodGroup: z
+    .enum(["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
+    .optional(),
+  presentAddress: z.string().min(1),
+  permanentAddress: z.string().min(1),
+  guardian: GuardianValidationSchema,
+  localGuardian: LocalGuardianValidationSchema,
+  profileImage: z.string().min(1),
+  isActive: z.enum(["active", "inactive"]).optional(),
 });
-
-export default studentValidationSchema;
+export default StudentValidationSchema;
+// Now, you can use this StudentSchema for validation purposes.
