@@ -3,10 +3,12 @@ import {
   TGuardian,
   TLocalGuardian,
   TStudent,
-  StudentMethods,
   StudentModel,
   TUserName,
 } from "./student/student.interface";
+
+import bcrypt from "bcrypt";
+import config from "../config";
 
 const userNameSchema = new Schema<TUserName>({
   firstName: {
@@ -87,12 +89,18 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
   },
 });
 
-const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
+const studentSchema = new Schema<TStudent, StudentModel>({
   id: {
     type: String,
     required: [true, "Student ID must be provided"],
     unique: true,
     trim: true,
+  },
+  password: {
+    type: String,
+    required: [true, "Student password must be provided"],
+    trim: true,
+    maxlength: [30, "password can not exceed 30 characters"],
   },
   name: {
     type: userNameSchema,
@@ -161,11 +169,44 @@ const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
     enum: ["active", "inactive"],
     default: "active",
   },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-studentSchema.methods.isUserExist = async function (id: string) {
+// pre save middleware / hooks
+
+studentSchema.pre("save", async function (next) {
+  // Store hash in your password DB.
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  const user = this;
+  user.password = await bcrypt.hash(
+    user.password,
+    Number(config.bcrypt_salt_rounds)
+  );
+  next();
+});
+
+// post save middleware / hooks
+studentSchema.post("save", function (doc, next) {
+  doc.password = "";
+  next();
+});
+
+// query middleware / hooks
+
+studentSchema.pre("find", function (next) {});
+
+// creating custom static method
+studentSchema.statics.isUserExists = async function (id: string) {
   const existingUser = await Student.findOne({ id });
   return existingUser;
 };
+
+// studentSchema.methods.isUserExist = async function (id: string) {
+//   const existingUser = await Student.findOne({ id });
+//   return existingUser;
+// };
 
 export const Student = model<TStudent, StudentModel>("Student", studentSchema);

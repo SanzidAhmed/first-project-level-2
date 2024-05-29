@@ -22,6 +22,7 @@ export type TUserName = {
 };
 export type TStudent = {
   id: string;
+  password: string;
   name: TUserName;
   gender: "male" | "female" | "custom";
   dateOfBirth?: string;
@@ -35,13 +36,19 @@ export type TStudent = {
   localGuardian: TLocalGuardian;
   profileImage?: string;
   isActive?: "active" | "inactive";
+  isDeleted: boolean;
 };
+// for creating static
+export interface StudentModel extends Model<TStudent> {
+  isUserExists(id: string): Promise<TStudent | null>;
+}
 
-export type StudentMethods = {
-  isUserExist(id: string): Promise<TStudent | null>;
-};
-export type StudentModel = Model<
-  TStudent,
-  Record<string, never>,
-  StudentMethods
->;
+// for creating instance
+// export type StudentMethods = {
+//   isUserExist(id: string): Promise<TStudent | null>;
+// };
+// export type StudentModel = Model<
+//   TStudent,
+//   Record<string, never>,
+//   StudentMethods
+// >;
