@@ -196,7 +196,20 @@ studentSchema.post("save", function (doc, next) {
 
 // query middleware / hooks
 
-studentSchema.pre("find", function (next) {});
+studentSchema.pre("find", function (next) {
+  this.find({ isDeleted: { $ne: true } });
+  next();
+});
+// studentSchema.pre("findOne", function (next) {
+//   this.find({ isDeleted: { $ne: true } });
+//   next();
+// });
+studentSchema.pre("aggregate", function (next) {
+  this.pipeline().unshift({
+    $match: { isDeleted: { $ne: true } },
+  });
+  next();
+});
 
 // creating custom static method
 studentSchema.statics.isUserExists = async function (id: string) {
